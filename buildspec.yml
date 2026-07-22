@@ -36,8 +36,9 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo "Docker image pushed successfully."
       
-      - printf '[{"name":"my-nginx-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-
+      - echo "IMAGE_URI=$REPOSITORY_URI:$IMAGE_TAG" > image_info.env
 artifacts:
   files:
-    - imagedefinitions.json
+    - appspec.yml
+    - scripts/**/*
+    - image_info.env
