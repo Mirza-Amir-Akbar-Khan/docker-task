@@ -2,7 +2,7 @@
 set -e
 
 # Check if a container named 'my-app' exists and is running
-if [ $(docker ps -q -f name=my-app) ]; then
+if [ -n "$(docker ps -q -f name=my-app)" ]; then
     echo "Stopping the currently running container..."
     docker stop my-app
     
