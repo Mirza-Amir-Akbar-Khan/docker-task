@@ -32,7 +32,6 @@ phases:
   post_build:
     commands:
       - echo "Pushing Docker image to Amazon ECR..."
-      - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo "Docker image pushed successfully."
       
