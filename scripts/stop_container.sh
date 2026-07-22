@@ -13,3 +13,4 @@ if [ -n "$(docker ps -q -f name=my-app)" ]; then
 else
     echo "No running container named 'my-app' was found. Skipping stop phase."
 fi
+
