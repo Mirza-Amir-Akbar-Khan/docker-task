@@ -15,9 +15,9 @@ phases:
       - export REPOSITORY_URI=$REGISTRY_URL/$IMAGE_REPO_NAME
       - 'echo "Repository URI: $REPOSITORY_URI"'
       
-      # Create a unique tag using the first 7 characters of the GitHub commit hash
+      # Use the commit hash, but append the unique build number to guarantee a new tag
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - IMAGE_TAG=${COMMIT_HASH:=latest}-$CODEBUILD_BUILD_NUMBER
       
       # Log in using the base ECR registry domain
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY_URL
