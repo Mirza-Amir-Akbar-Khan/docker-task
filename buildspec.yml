@@ -25,17 +25,17 @@ phases:
   build:
     commands:
       - echo "Building Docker image..."
-      # Build and tag with both 'latest' and the unique commit hash
-      - docker tag $IMAGE_REPO_NAME:latest $REPOSITORY_URI:latest
-      - docker tag $IMAGE_REPO_NAME:latest $REPOSITORY_URI:$IMAGE_TAG
+      # Only build and tag the unique commit hash
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
       - echo "Pushing Docker image to Amazon ECR..."
+      # Only push the unique commit hash tag
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo "Docker image pushed successfully."
       
-      # Generate the deployment artifact for CodePipeline
       - printf '[{"name":"my-nginx-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
