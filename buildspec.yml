@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     IMAGE_REPO_NAME: amir/docker-task
-    IMAGE_TAG: latest
+    # Removed hardcoded IMAGE_TAG from here
 
 phases:
   pre_build:
@@ -14,19 +14,32 @@ phases:
       - REGISTRY_URL=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - export REPOSITORY_URI=$REGISTRY_URL/$IMAGE_REPO_NAME
       - 'echo "Repository URI: $REPOSITORY_URI"'
-
+      
+      # Create a unique tag using the first 7 characters of the GitHub commit hash
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      
       # Log in using the base ECR registry domain
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY_URL
 
   build:
     commands:
       - echo "Building Docker image..."
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+      # Build and tag with both 'latest' and the unique commit hash
+      - docker build -t $IMAGE_REPO_NAME:latest .
+      - docker tag $IMAGE_REPO_NAME:latest $REPOSITORY_URI:latest
+      - docker tag $IMAGE_REPO_NAME:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
       - echo "Pushing Docker image to Amazon ECR..."
+      - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo "Docker image pushed successfully."
+      
+      # Generate the deployment artifact for CodePipeline
+      - printf '[{"name":"my-nginx-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
+artifacts:
+  files:
+    - imagedefinitions.json
